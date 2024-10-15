@@ -1,0 +1,27 @@
+
+services:
+  db:
+    container_name: mariadb
+    image: mariadb:latest
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - database
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8081:80
+    networks:
+      - database
+    environment:
+      - PMA_ARBITRARY=1
+
+networks:
+  database:
+    driver: bridge
