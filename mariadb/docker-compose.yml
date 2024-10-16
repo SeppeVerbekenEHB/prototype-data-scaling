@@ -7,7 +7,7 @@ services:
     ports:
       - 3306:3306
     environment:
-
+      MAX_ALLOWED_PACKET: 56777216 # 160MB
       MYSQL_ROOT_PASSWORD: root
     networks:
       - database

@@ -30,7 +30,11 @@ app.get('/plants', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(results);
+
+        // count the number of plants from the results
+        const count = results.length;
+
+        res.json(count);
     });
 });
 
