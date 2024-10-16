@@ -24,7 +24,17 @@ connection.connect((err) => {
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Example route to add a plant
+// Get all plants
+app.get('/plants', (req, res) => {
+    connection.query('SELECT * FROM plants', (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+});
+
+// Post a plant
 app.post('/plants', (req, res) => {
     const { name, bloom_time, planting_time, discoverer } = req.body;
 

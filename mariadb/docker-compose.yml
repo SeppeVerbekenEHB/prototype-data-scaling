@@ -11,6 +11,8 @@ services:
       MYSQL_ROOT_PASSWORD: root
     networks:
       - database
+    volumes:
+      - ./data:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin
