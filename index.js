@@ -1,38 +1,60 @@
 const express = require('express');
-const { redisClient, connectRedis } = require('./js/redisClient'); // Adjust path as needed
+
+const mysql = require('mysql2');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to Redis
-connectRedis();
+// Create a connection to the database
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'root', // your password from docker-compose.yml
+    database: 'flora'  // the database you created
+});
 
-// Example route that uses Redis caching
-app.get('/plants', async (req, res) => {
-    const cacheKey = 'plantsCache';
-    
-    // Check Redis for cached results
-    const cacheResults = await redisClient.get(cacheKey);
-    if (cacheResults) {
-        return res.json(JSON.parse(cacheResults)); // Return cached data
+connection.connect((err) => {
+    if (err) {
+        console.error('Database connection failed: ', err.stack);
+        return;
     }
-
-    // Fetch from the database if not found in cache
-    const plants = await fetchFromDatabase(); // Define your database fetching logic
-    await redisClient.set(cacheKey, JSON.stringify(plants), { EX: 3600 }); // Cache the data for 1 hour
-    res.json(plants);
+    console.log('Connected to database.');
 });
 
-// Start your server
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Get all plants
+app.get('/plants', (req, res) => {
+    connection.query('SELECT * FROM plants', (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // count the number of plants from the results
+        const count = results.length;
+
+        res.json(results);
+    });
+});
+
+// Post a plant
+app.post('/plants', (req, res) => {
+    const { name, bloom_time, planting_time, discoverer } = req.body;
+
+    connection.query(
+        'INSERT INTO plants (name, bloom_time, planting_time, discoverer) VALUES (?, ?, ?, ?)',
+        [name, bloom_time, planting_time, discoverer],
+        (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.status(201).json({ id: results.insertId, name, bloom_time, planting_time, discoverer });
+        }
+    );
+});
+
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
-
-// Dummy database fetching function (replace with your actual DB logic)
-const fetchFromDatabase = async () => {
-    // Example data (replace with your actual database query)
-    return [
-        { id: 1, name: 'Rose', bloom_time: 'Spring' },
-        { id: 2, name: 'Tulip', bloom_time: 'Spring' },
-    ];
-};

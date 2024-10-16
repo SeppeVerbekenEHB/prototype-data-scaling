@@ -3,7 +3,7 @@
 const { faker } = require('@faker-js/faker');
 
 // Number of entries to create
-const TOTAL_PLANTS = 100_000; // Change this to the desired number of plants
+const TOTAL_PLANTS = 1_000_000; // Change this to the desired number of plants
 // Batch size for each insertion
 const BATCH_SIZE = 10_000; // You can adjust this based on your performance tests
 
