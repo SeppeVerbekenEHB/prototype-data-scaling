@@ -1,4 +1,3 @@
-
 services:
   db:
     container_name: mariadb
@@ -7,7 +6,7 @@ services:
     ports:
       - 3306:3306
     environment:
-      MAX_ALLOWED_PACKET: 56777216 # 160MB
+      MAX_ALLOWED_PACKET: 56777216 # 56MB
       MYSQL_ROOT_PASSWORD: root
     networks:
       - database
@@ -23,6 +22,15 @@ services:
       - database
     environment:
       - PMA_ARBITRARY=1
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - database
 
 networks:
   database:
