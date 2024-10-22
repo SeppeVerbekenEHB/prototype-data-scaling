@@ -48,16 +48,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Function to filter plants based on selected bloom and planting times
     function filterPlants() {
+        const searchTerm = document.getElementById('searchPlant').value.toLowerCase();
+        const discovererSearchTerm = document.getElementById('searchDiscoverer').value.toLowerCase();
         const bloomMonth = document.getElementById('bloomTimeFilter').value;
         const plantingMonth = document.getElementById('plantingTimeFilter').value;
 
-        const filteredPlants = plants.filter(plant => plant.bloom_time.includes(bloomMonth) && plant.planting_time.includes(plantingMonth));
+        const filteredPlants = plants.filter(plant => {
+            const matchesName = plant.name.toLowerCase().includes(searchTerm);
+            const matchesDiscoverer = plant.discoverer.toLowerCase().includes(discovererSearchTerm);
+            const matchesBloom = !bloomMonth || plant.bloom_time.includes(bloomMonth);
+            const matchesPlanting = !plantingMonth || plant.planting_time.includes(plantingMonth);
+
+            return matchesName && matchesDiscoverer && matchesBloom && matchesPlanting;
+        });
 
         displayPlants(filteredPlants); // Display the filtered results
     }
 
     // Event listener for filtering
     document.getElementById('filterPlants').addEventListener('click', filterPlants);
+
+    // Event listener for searching
+    document.getElementById('searchPlant').addEventListener('input', filterPlants);
+    document.getElementById('searchDiscoverer').addEventListener('input', filterPlants);
 
     // Initial fetch on page load
     fetchPlants();
