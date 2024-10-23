@@ -1,15 +1,21 @@
 document.addEventListener('DOMContentLoaded', async () => {
     let plants = []; // Store fetched plant data
+    const spinner = document.getElementById('spinner'); // Reference to the spinner
 
     // Function to fetch plants from the server
     async function fetchPlants() {
         try {
+            spinner.style.display = 'block'; // Show the spinner before the fetch
+
             const response = await fetch('/plants');
             const data = await response.json();
             plants = data; // Store fetched plants in the global array
+
             displayPlants(plants); // Display all plants initially
         } catch (error) {
             console.error('Error fetching plant data:', error);
+        } finally {
+            spinner.style.display = 'none'; // Hide the spinner after the fetch
         }
     }
 
