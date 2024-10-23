@@ -1,21 +1,33 @@
 document.addEventListener('DOMContentLoaded', async () => {
     let plants = []; // Store fetched plant data
-    const spinner = document.getElementById('spinner'); // Reference to the spinner
+    let currentPage = 0; // Track the current page
+    let plantsPerPage = 10; // Default plants per page
+    let totalPlants = 0; // Track the total number of plants
+
+    // Function to show the loading spinner
+    function showSpinner() {
+        document.getElementById('loadingSpinnerContainer').style.display = 'flex';
+    }
+
+    // Function to hide the loading spinner
+    function hideSpinner() {
+        document.getElementById('loadingSpinnerContainer').style.display = 'none';
+    }
 
     // Function to fetch plants from the server
     async function fetchPlants() {
+        showSpinner(); // Show spinner before fetching data
         try {
-            spinner.style.display = 'block'; // Show the spinner before the fetch
-
-            const response = await fetch('/plants');
+            const response = await fetch(`/plants?limit=${plantsPerPage}&offset=${currentPage * plantsPerPage}`);
             const data = await response.json();
-            plants = data; // Store fetched plants in the global array
-
-            displayPlants(plants); // Display all plants initially
+            plants = data.plants; // Store fetched plants in the global array
+            totalPlants = data.total; // Get the total number of plants
+            displayPlants(plants); // Display the current page of plants
+            updatePagination(); // Update pagination controls
         } catch (error) {
             console.error('Error fetching plant data:', error);
         } finally {
-            spinner.style.display = 'none'; // Hide the spinner after the fetch
+            hideSpinner(); // Hide spinner after fetching data
         }
     }
 
@@ -52,31 +64,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Function to filter plants based on selected bloom and planting times
-    function filterPlants() {
-        const searchTerm = document.getElementById('searchPlant').value.toLowerCase();
-        const discovererSearchTerm = document.getElementById('searchDiscoverer').value.toLowerCase();
-        const bloomMonth = document.getElementById('bloomTimeFilter').value;
-        const plantingMonth = document.getElementById('plantingTimeFilter').value;
+    // Function to update pagination controls
+    function updatePagination() {
+        const totalPages = Math.ceil(totalPlants / plantsPerPage);
+        document.getElementById('pageInfo').textContent = `Page ${currentPage + 1} of ${totalPages}`;
 
-        const filteredPlants = plants.filter(plant => {
-            const matchesName = plant.name.toLowerCase().includes(searchTerm);
-            const matchesDiscoverer = plant.discoverer.toLowerCase().includes(discovererSearchTerm);
-            const matchesBloom = !bloomMonth || plant.bloom_time.includes(bloomMonth);
-            const matchesPlanting = !plantingMonth || plant.planting_time.includes(plantingMonth);
-
-            return matchesName && matchesDiscoverer && matchesBloom && matchesPlanting;
-        });
-
-        displayPlants(filteredPlants); // Display the filtered results
+        document.getElementById('prevPage').disabled = currentPage === 0; // Disable previous button on first page
+        document.getElementById('nextPage').disabled = currentPage >= totalPages - 1; // Disable next button on last page
     }
 
-    // Event listener for filtering
-    document.getElementById('filterPlants').addEventListener('click', filterPlants);
+    // Event listeners for pagination
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage--;
+            fetchPlants();
+        }
+    });
 
-    // Event listener for searching
-    document.getElementById('searchPlant').addEventListener('input', filterPlants);
-    document.getElementById('searchDiscoverer').addEventListener('input', filterPlants);
+    document.getElementById('nextPage').addEventListener('click', () => {
+        const totalPages = Math.ceil(totalPlants / plantsPerPage);
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            fetchPlants();
+        }
+    });
+
+    // Event listener for plants per page change
+    document.getElementById('plantsPerPage').addEventListener('change', (event) => {
+        plantsPerPage = parseInt(event.target.value);
+        currentPage = 0; // Reset to first page
+        fetchPlants(); // Fetch plants again with the new limit
+    });
 
     // Initial fetch on page load
     fetchPlants();

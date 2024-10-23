@@ -30,17 +30,39 @@ app.use(express.json());
 
 // Get all plants
 app.get('/plants', (req, res) => {
-    connection.query('SELECT * FROM plants', (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+    const limit = parseInt(req.query.limit) || 10; // Number of plants per page
+    const offset = parseInt(req.query.offset) || 0; // Starting point
+
+    // Query to get paginated plants
+    connection.query(
+        'SELECT * FROM plants LIMIT ? OFFSET ?',
+        [limit, offset],
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching plants:', err);
+                return res.status(500).json({ error: 'Internal Server Error' });
+            }
+
+            // Query to get the total count of plants
+            connection.query(
+                'SELECT COUNT(*) AS count FROM plants',
+                (err, countResults) => {
+                    if (err) {
+                        console.error('Error counting plants:', err);
+                        return res.status(500).json({ error: 'Internal Server Error' });
+                    }
+
+                    // Respond with plant data and total count
+                    res.json({
+                        plants: results,
+                        total: countResults[0].count // Return the total plant count
+                    });
+                }
+            );
         }
-
-        // count the number of plants from the results
-        const count = results.length;
-
-        res.json(results);
-    });
+    );
 });
+
 
 // Post a plant
 app.post('/plants', (req, res) => {
