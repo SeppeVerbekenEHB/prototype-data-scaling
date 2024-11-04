@@ -9,12 +9,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Create a connection to the database
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root', // your password from docker-compose.yml
-    database: 'flora'  // the database you created
+    password: 'root',
+    database: 'flora'
 });
 
 connection.connect((err) => {
@@ -25,13 +24,12 @@ connection.connect((err) => {
     console.log('Connected to database.');
 });
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Get all plants
 app.get('/plants', (req, res) => {
-    const limit = parseInt(req.query.limit) || 10; // Number of plants per page
-    const offset = parseInt(req.query.offset) || 0; // Starting point
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
 
     // Query to get paginated plants
     connection.query(
@@ -52,10 +50,9 @@ app.get('/plants', (req, res) => {
                         return res.status(500).json({ error: 'Internal Server Error' });
                     }
 
-                    // Respond with plant data and total count
                     res.json({
                         plants: results,
-                        total: countResults[0].count // Return the total plant count
+                        total: countResults[0].count
                     });
                 }
             );
@@ -64,7 +61,6 @@ app.get('/plants', (req, res) => {
 });
 
 
-// Post a plant
 app.post('/plants', (req, res) => {
     const { name, bloom_time, planting_time, discoverer } = req.body;
 

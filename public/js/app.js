@@ -1,29 +1,27 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    let plants = []; // Store fetched plant data
-    let currentPage = 0; // Track the current page
-    let plantsPerPage = 10; // Default number of plants per page
+    let plants = [];
+    let currentPage = 0;
+    let plantsPerPage = 10;
 
-    // Function to fetch plants from the server
     async function fetchPlants() {
-        showSpinner(); // Show loading spinner
+        showSpinner();
         try {
             const response = await fetch(`/plants?limit=${plantsPerPage}&offset=${currentPage * plantsPerPage}`);
             const data = await response.json();
-            plants = data.plants; // Store fetched plants in the global array
-            const totalPlants = data.total; // Get total plants for pagination
-            displayPlants(plants); // Display the fetched plants
-            updatePagination(totalPlants); // Update pagination controls
+            plants = data.plants;
+            const totalPlants = data.total;
+            displayPlants(plants);
+            updatePagination(totalPlants);
         } catch (error) {
             console.error('Error fetching plant data:', error);
         } finally {
-            hideSpinner(); // Hide loading spinner
+            hideSpinner();
         }
     }
 
-    // Function to display plants in the table
     function displayPlants(plants) {
         const tableBody = document.getElementById('plantTableBody');
-        tableBody.innerHTML = ''; // Clear existing table rows
+        tableBody.innerHTML = '';
 
         plants.forEach(plant => {
             const row = document.createElement('tr');
@@ -49,7 +47,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Function to convert plant data to CSV format
     function convertToCSV(plants) {
         const header = ['Name', 'Bloom Time', 'Planting Time', 'Discoverer'];
         const rows = plants.map(plant => [
@@ -66,7 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return csvContent;
     }
 
-    // Function to download the CSV file
     function downloadCSV(plants) {
         const csvData = convertToCSV(plants);
         const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
@@ -80,7 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.removeChild(link); // Clean up
     }
 
-    // Function to filter plants based on search and filters
     function filterPlants() {
         const searchTerm = document.getElementById('searchPlant').value.toLowerCase();
         const discovererSearchTerm = document.getElementById('searchDiscoverer').value.toLowerCase();
@@ -99,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayPlants(filteredPlants); // Display the filtered results
     }
 
-    // Function to handle pagination
     function updatePagination(totalPlants) {
         const paginationInfo = document.getElementById('pageInfo');
         const totalPages = Math.ceil(totalPlants / plantsPerPage);
@@ -110,46 +104,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('nextPage').disabled = currentPage >= totalPages - 1; // Disable next button if on last page
     }
 
-    // Show the loading spinner
     function showSpinner() {
         document.getElementById('loadingSpinnerContainer').style.display = 'block';
     }
 
-    // Hide the loading spinner
     function hideSpinner() {
         document.getElementById('loadingSpinnerContainer').style.display = 'none';
     }
 
-    // Event listeners for searching and filtering
     document.getElementById('filterPlants').addEventListener('click', filterPlants);
     document.getElementById('searchPlant').addEventListener('input', filterPlants);
     document.getElementById('searchDiscoverer').addEventListener('input', filterPlants);
 
-    // Event listener for plants per page dropdown
     document.getElementById('plantsPerPage').addEventListener('change', (event) => {
         plantsPerPage = parseInt(event.target.value);
-        currentPage = 0; // Reset to first page
-        fetchPlants(); // Fetch plants with new limit
+        currentPage = 0;
+        fetchPlants();
     });
 
-    // Event listener for pagination
     document.getElementById('prevPage').addEventListener('click', () => {
         if (currentPage > 0) {
             currentPage--;
-            fetchPlants(); // Fetch plants for previous page
+            fetchPlants();
         }
     });
 
     document.getElementById('nextPage').addEventListener('click', () => {
         currentPage++;
-        fetchPlants(); // Fetch plants for next page
+        fetchPlants();
     });
 
-    // Event listener for CSV export
     document.getElementById('exportCSV').addEventListener('click', () => {
-        downloadCSV(plants); // Pass the current plants data to download
+        downloadCSV(plants);
     });
 
-    // Initial fetch on page load
     fetchPlants();
 });

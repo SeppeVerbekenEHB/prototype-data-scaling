@@ -3,9 +3,9 @@
 const { faker } = require('@faker-js/faker');
 
 // Number of entries to create
-const TOTAL_PLANTS = 50_000; // Change this to the desired number of plants
+const TOTAL_PLANTS = 50_000;
 // Batch size for each insertion
-const BATCH_SIZE = 10_000; // You can adjust this based on your performance tests
+const BATCH_SIZE = 10_000;
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -25,8 +25,7 @@ module.exports = {
       if (plants.length === BATCH_SIZE) {
         await queryInterface.bulkInsert('Plants', plants, {});
         console.log(`Inserted ${i + 1} plants`);
-        // Clear the array for the next batch
-        plants.length = 0; // Efficient way to empty the array
+        plants.length = 0;
       }
     }
 
@@ -38,7 +37,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Remove all plants when rolling back
     await queryInterface.bulkDelete('Plants', null, {});
   }
 };
